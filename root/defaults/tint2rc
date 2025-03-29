@@ -165,6 +165,7 @@ launcher_item_app = /usr/share/applications/wps-office-wps.desktop
 launcher_item_app = /usr/share/applications/wps-office-wpp.desktop
 launcher_item_app = /usr/share/applications/wps-office-et.desktop
 launcher_item_app = /usr/share/applications/wps-office-pdf.desktop
+launcher_item_app = /usr/share/applications/pycharm.desktop
 launcher_item_app = /usr/share/applications/chromium.desktop
 launcher_item_app = /usr/share/applications/thunar.desktop
 
