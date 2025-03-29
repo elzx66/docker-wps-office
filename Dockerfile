@@ -20,6 +20,7 @@ RUN \
   echo "**** install packages ****" && \
   pacman -Sy --noconfirm --needed \
     chromium \
+    extra/pycharm-community-edition \
     noto-fonts-cjk \
     git \
     qt6-base \
