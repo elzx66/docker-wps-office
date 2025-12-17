@@ -3,7 +3,8 @@
 # jenkins variables
 project_name: docker-wps-office
 external_type: na
-custom_version_command: "curl -sL https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=wps-office | awk -F'=' '/^pkgver=/ {print $2}'"
+custom_version_command: |
+  curl -s 'https://aur.archlinux.org/rpc/v5/info?arg[]=wps-office' | jq -r '.results[] | select(.Name == "wps-office") | .Version'
 release_type: stable
 release_tag: latest
 ls_branch: master
@@ -19,8 +20,8 @@ repo_vars:
   - MULTIARCH = 'false'
   - CI = 'true'
   - CI_WEB = 'true'
-  - CI_PORT = '3000'
-  - CI_SSL = 'false'
+  - CI_PORT = '3001'
+  - CI_SSL = 'true'
   - CI_DELAY = '120'
   - CI_DOCKERENV = 'TZ=US/Pacific'
   - CI_AUTH = 'user:password'

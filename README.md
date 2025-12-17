@@ -5,7 +5,6 @@
 [![Blog](https://img.shields.io/static/v1.svg?color=94398d&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=linuxserver.io&message=Blog)](https://blog.linuxserver.io "all the things you can do with our containers including How-To guides, opinions and much more!")
 [![Discord](https://img.shields.io/discord/354974912613449730.svg?color=94398d&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=Discord&logo=discord)](https://linuxserver.io/discord "realtime support / chat with the community and the team.")
 [![Discourse](https://img.shields.io/discourse/https/discourse.linuxserver.io/topics.svg?color=94398d&labelColor=555555&logoColor=ffffff&style=for-the-badge&logo=discourse)](https://discourse.linuxserver.io "post on our community forum.")
-[![Fleet](https://img.shields.io/static/v1.svg?color=94398d&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=linuxserver.io&message=Fleet)](https://fleet.linuxserver.io "an online web interface which displays all of our maintained images.")
 [![GitHub](https://img.shields.io/static/v1.svg?color=94398d&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=linuxserver.io&message=GitHub&logo=github)](https://github.com/linuxserver "view the source for all of our repositories.")
 [![Open Collective](https://img.shields.io/opencollective/all/linuxserver.svg?color=94398d&labelColor=555555&logoColor=ffffff&style=for-the-badge&label=Supporters&logo=open%20collective)](https://opencollective.com/linuxserver "please consider helping us by either donating or contributing to our budget")
 
@@ -22,7 +21,6 @@ Find us at:
 * [Blog](https://blog.linuxserver.io) - all the things you can do with our containers including How-To guides, opinions and much more!
 * [Discord](https://linuxserver.io/discord) - realtime support / chat with the community and the team.
 * [Discourse](https://discourse.linuxserver.io) - post on our community forum.
-* [Fleet](https://fleet.linuxserver.io) - an online web interface which displays all of our maintained images.
 * [GitHub](https://github.com/linuxserver) - view the source for all of our repositories.
 * [Open Collective](https://opencollective.com/linuxserver) - please consider helping us by either donating or contributing to our budget
 
@@ -55,78 +53,96 @@ The architectures supported by this image are:
 | :----: | :----: | ---- |
 | x86-64 | ✅ | amd64-\<version tag\> |
 | arm64 | ❌ | |
-| armhf | ❌ | |
-
-## Version Tags
-
-This image provides various versions that are available via tags. Please read the descriptions carefully and exercise caution when using unstable or development tags.
-
-| Tag | Available | Description |
-| :----: | :----: |--- |
-| latest | ✅ | Standard English release |
-| chinese | ✅ | Simplified Chinese version |
 
 ## Application Setup
 
 The application can be accessed at:
 
-* http://yourhost:3000/
 * https://yourhost:3001/
 
-**Modern GUI desktop apps have issues with the latest Docker and syscall compatibility, you can use Docker with the `--security-opt seccomp=unconfined` setting to allow these syscalls on hosts with older Kernels or libseccomp**
+### Strict reverse proxies
+
+This image uses a self-signed certificate by default. This naturally means the scheme is `https`.
+If you are using a reverse proxy which validates certificates, you need to [disable this check for the container](https://docs.linuxserver.io/faq#strict-proxy).
+
+**Modern GUI desktop apps may have compatibility issues with the latest Docker syscall restrictions. You can use Docker with the `--security-opt seccomp=unconfined` setting to allow these syscalls on hosts with older Kernels or libseccomp versions.**
 
 ### Security
 
 >[!WARNING]
->Do not put this on the Internet if you do not know what you are doing.
+>This container provides privileged access to the host system. Do not expose it to the Internet unless you have secured it properly.
 
-By default this container has no authentication and the optional environment variables `CUSTOM_USER` and `PASSWORD` to enable basic http auth via the embedded NGINX server should only be used to locally secure the container from unwanted access on a local network. If exposing this to the Internet we recommend putting it behind a reverse proxy, such as [SWAG](https://github.com/linuxserver/docker-swag), and ensuring a secure authentication solution is in place. From the web interface a terminal can be launched and it is configured for passwordless sudo, so anyone with access to it can install and run whatever they want along with probing your local network.
+**HTTPS is required for full functionality.** Modern browser features such as WebCodecs, used for video and audio, will not function over an insecure HTTP connection.
 
-### Options in all KasmVNC based GUI containers
+By default, this container has no authentication. The optional `CUSTOM_USER` and `PASSWORD` environment variables enable basic HTTP auth, which is suitable only for securing the container on a trusted local network. For internet exposure, we strongly recommend placing the container behind a reverse proxy, such as [SWAG](https://github.com/linuxserver/docker-swag), with a robust authentication mechanism.
 
-This container is based on [Docker Baseimage KasmVNC](https://github.com/linuxserver/docker-baseimage-kasmvnc) which means there are additional environment variables and run configurations to enable or disable specific functionality.
+The web interface includes a terminal with passwordless `sudo` access. Any user with access to the GUI can gain root control within the container, install arbitrary software, and probe your local network.
 
-#### Optional environment variables
+While not generally recommended, certain legacy environments specifically those with older hardware or outdated Linux distributions may require the deactivation of the standard seccomp profile to get containerized desktop software to run. This can be achieved by utilizing the `--security-opt seccomp=unconfined` parameter. It is critical to use this option only when absolutely necessary as it disables a key security layer of Docker, elevating the potential for container escape vulnerabilities.
+
+### Options in all Selkies-based GUI containers
+
+This container is based on [Docker Baseimage Selkies](https://github.com/linuxserver/docker-baseimage-selkies), which provides the following environment variables and run configurations to customize its functionality.
+
+#### Optional Environment Variables
 
 | Variable | Description |
 | :----: | --- |
-| CUSTOM_PORT | Internal port the container listens on for http if it needs to be swapped from the default 3000. |
-| CUSTOM_HTTPS_PORT | Internal port the container listens on for https if it needs to be swapped from the default 3001. |
+| CUSTOM_PORT | Internal port the container listens on for http if it needs to be swapped from the default `3000` |
+| CUSTOM_HTTPS_PORT | Internal port the container listens on for https if it needs to be swapped from the default `3001` |
+| CUSTOM_WS_PORT | Internal port the container listens on for websockets if it needs to be swapped from the default 8082 |
 | CUSTOM_USER | HTTP Basic auth username, abc is default. |
+| DRI_NODE | Enable VAAPI stream encoding and use the specified device IE `/dev/dri/renderD128` |
+| DRINODE | Specify which GPU to use for DRI3 acceleration IE `/dev/dri/renderD129` |
 | PASSWORD | HTTP Basic auth password, abc is default. If unset there will be no auth |
 | SUBFOLDER | Subfolder for the application if running a subfolder reverse proxy, need both slashes IE `/subfolder/` |
-| TITLE | The page title displayed on the web browser, default "KasmVNC Client". |
-| FM_HOME | This is the home directory (landing) for the file manager, default "/config". |
-| START_DOCKER | If set to false a container with privilege will not automatically start the DinD Docker setup. |
-| DRINODE | If mounting in /dev/dri for [DRI3 GPU Acceleration](https://www.kasmweb.com/kasmvnc/docs/master/gpu_acceleration.html) allows you to specify the device to use IE `/dev/dri/renderD128` |
-| DISABLE_IPV6 | If set to true or any value this will disable IPv6 | 
+| TITLE | The page title displayed on the web browser, default "Selkies" |
+| DASHBOARD | Allows the user to set their dashboard. Options: `selkies-dashboard`, `selkies-dashboard-zinc`, `selkies-dashboard-wish` |
+| FILE_MANAGER_PATH | Modifies the default upload/download file path, path must have proper permissions for abc user |
+| START_DOCKER | If set to false a container with privilege will not automatically start the DinD Docker setup |
+| DISABLE_IPV6 | If set to true or any value this will disable IPv6 |
 | LC_ALL | Set the Language for the container to run as IE `fr_FR.UTF-8` `ar_AE.UTF-8` |
-| NO_DECOR | If set the application will run without window borders in openbox for use as a PWA. |
+| NO_DECOR | If set the application will run without window borders for use as a PWA. (Decor can be enabled and disabled with Ctrl+Shift+d) |
 | NO_FULL | Do not autmatically fullscreen applications when using openbox. |
+| NO_GAMEPAD | Disable userspace gamepad interposer injection. |
+| DISABLE_ZINK | Do not set the Zink environment variables if a video card is detected (userspace applications will use CPU rendering) |
+| DISABLE_DRI3 | Do not use DRI3 acceleration if a video card is detected (userspace applications will use CPU rendering) |
+| MAX_RES | Pass a larger maximum resolution for the container default is 16k `15360x8640` |
+| WATERMARK_PNG | Full path inside the container to a watermark png IE `/usr/share/selkies/www/icon.png` |
+| WATERMARK_LOCATION | Where to paint the image over the stream integer options below |
 
-#### Optional run configurations
+**`WATERMARK_LOCATION` Options:**
+- **1**: Top Left
+- **2**: Top Right
+- **3**: Bottom Left
+- **4**: Bottom Right
+- **5**: Centered
+- **6**: Animated
 
-| Variable | Description |
+#### Optional Run Configurations
+
+| Argument | Description |
 | :----: | --- |
-| `--privileged` | Will start a Docker in Docker (DinD) setup inside the container to use docker in an isolated environment. For increased performance mount the Docker directory inside the container to the host IE `-v /home/user/docker-data:/var/lib/docker`. |
-| `-v /var/run/docker.sock:/var/run/docker.sock` | Mount in the host level Docker socket to either interact with it via CLI or use Docker enabled applications. |
+| `--privileged` | Starts a Docker-in-Docker (DinD) environment. For better performance, mount the Docker data directory from the host, e.g., `-v /path/to/docker-data:/var/lib/docker`. |
+| `-v /var/run/docker.sock:/var/run/docker.sock` | Mounts the host's Docker socket to manage host containers from within this container. |
 | `--device /dev/dri:/dev/dri` | Mount a GPU into the container, this can be used in conjunction with the `DRINODE` environment variable to leverage a host video card for GPU accelerated applications. Only **Open Source** drivers are supported IE (Intel,AMDGPU,Radeon,ATI,Nouveau) |
 
 ### Language Support - Internationalization
 
-The environment variable `LC_ALL` can be used to start this container in a different language than English simply pass for example to launch the Desktop session in French `LC_ALL=fr_FR.UTF-8`. Some languages like Chinese, Japanese, or Korean will be missing fonts needed to render properly known as cjk fonts, but others may exist and not be installed inside the container depending on what underlying distribution you are running. We only ensure fonts for Latin characters are present. Fonts can be installed with a mod on startup.
+To launch the desktop session in a different language, set the `LC_ALL` environment variable. For example:
 
-To install cjk fonts on startup as an example pass the environment variables (Alpine base):
+*   `-e LC_ALL=zh_CN.UTF-8` - Chinese
+*   `-e LC_ALL=ja_JP.UTF-8` - Japanese
+*   `-e LC_ALL=ko_KR.UTF-8` - Korean
+*   `-e LC_ALL=ar_AE.UTF-8` - Arabic
+*   `-e LC_ALL=ru_RU.UTF-8` - Russian
+*   `-e LC_ALL=es_MX.UTF-8` - Spanish (Latin America)
+*   `-e LC_ALL=de_DE.UTF-8` - German
+*   `-e LC_ALL=fr_FR.UTF-8` - French
+*   `-e LC_ALL=nl_NL.UTF-8` - Netherlands
+*   `-e LC_ALL=it_IT.UTF-8` - Italian
 
-```
--e DOCKER_MODS=linuxserver/mods:universal-package-install 
--e INSTALL_PACKAGES=fonts-noto-cjk
--e LC_ALL=zh_CN.UTF-8
-```
-
-The web interface has the option for "IME Input Mode" in Settings which will allow non english characters to be used from a non en_US keyboard on the client. Once enabled it will perform the same as a local Linux installation set to your locale.
-
-### DRI3 GPU Acceleration (KasmVNC interface)
+### DRI3 GPU Acceleration
 
 For accelerated apps or games, render devices can be mounted into the container and leveraged by applications using:
 
@@ -141,27 +157,30 @@ This feature only supports **Open Source** GPU drivers:
 | NVIDIA | nouveau2 drivers only, closed source NVIDIA drivers lack DRI3 support |
 
 The `DRINODE` environment variable can be used to point to a specific GPU.
-Up to date information can be found [here](https://www.kasmweb.com/kasmvnc/docs/master/gpu_acceleration.html)
 
-### Nvidia GPU Support (KasmVNC interface)
+DRI3 will work on aarch64 given the correct drivers are installed inside the container for your chipset.
 
-**Nvidia support is not compatible with Alpine based images as Alpine lacks Nvidia drivers**
+### Nvidia GPU Support
 
-Nvidia support is available by leveraging Zink for OpenGL support. This can be enabled with the following run flags:
+**Note: Nvidia support is not available for Alpine-based images.**
 
-| Variable | Description |
+Nvidia GPU support is available by leveraging Zink for OpenGL. When a compatible Nvidia GPU is passed through, it will also be **automatically utilized for hardware-accelerated video stream encoding** (using the `x264enc` full-frame profile), significantly reducing CPU load.
+
+Enable Nvidia support with the following runtime flags:
+
+| Flag | Description |
 | :----: | --- |
-| --gpus all | This can be filtered down but for most setups this will pass the one Nvidia GPU on the system |
-| --runtime nvidia | Specify the Nvidia runtime which mounts drivers and tools in from the host |
+| `--gpus all` | Passes all available host GPUs to the container. This can be filtered to specific GPUs. |
+| `--runtime nvidia` | Specifies the Nvidia runtime, which provides the necessary drivers and tools from the host. |
 
-The compose syntax is slightly different for this as you will need to set nvidia as the default runtime:
+For Docker Compose, you must first configure the Nvidia runtime as the default on the host:
 
 ```
 sudo nvidia-ctk runtime configure --runtime=docker --set-as-default
-sudo service docker restart
+sudo systemctl restart docker
 ```
 
-And to assign the GPU in compose:
+Then, assign the GPU to the service in your `compose.yaml`:
 
 ```
 services:
@@ -176,27 +195,156 @@ services:
               capabilities: [compute,video,graphics,utility]
 ```
 
-### Application management
+### Application Management
 
-#### PRoot Apps
+There are two methods for installing applications inside the container: PRoot Apps (recommended for persistence) and Native Apps.
 
-If you run system native installations of software IE `sudo apt-get install filezilla` and then upgrade or destroy/re-create the container that software will be removed and the container will be at a clean state. For some users that will be acceptable and they can update their system packages as well using system native commands like `apt-get upgrade`. If you want Docker to handle upgrading the container and retain your applications and settings we have created [proot-apps](https://github.com/linuxserver/proot-apps) which allow portable applications to be installed to persistent storage in the user's `$HOME` directory and they will work in a confined Docker environment out of the box. These applications and their settings will persist upgrades of the base container and can be mounted into different flavors of KasmVNC based containers on the fly. This can be achieved from the command line with:
+#### PRoot Apps (Persistent)
+
+Natively installed packages (e.g., via `apt-get install`) will not persist if the container is recreated. To retain applications and their settings across container updates, we recommend using [proot-apps](https://github.com/linuxserver/proot-apps). These are portable applications installed to the user's persistent `$HOME` directory.
+
+To install an application, use the command line inside the container:
 
 ```
 proot-apps install filezilla
 ```
 
-PRoot Apps is included in all KasmVNC based containers, a list of linuxserver.io supported applications is located [HERE](https://github.com/linuxserver/proot-apps?tab=readme-ov-file#supported-apps).
+A list of supported applications is available [here](https://github.com/linuxserver/proot-apps?tab=readme-ov-file#supported-apps).
 
-#### Native Apps
+#### Native Apps (Non-Persistent)
 
-It is possible to install extra packages during container start using [universal-package-install](https://github.com/linuxserver/docker-mods/tree/universal-package-install). It might increase starting time significantly. PRoot is preferred.
+You can install packages from the system's native repository using the [universal-package-install](https://github.com/linuxserver/docker-mods/tree/universal-package-install) mod. This method will increase the container's start time and is not persistent. Add the following to your `compose.yaml`:
 
 ```yaml
   environment:
     - DOCKER_MODS=linuxserver/mods:universal-package-install
     - INSTALL_PACKAGES=libfuse2|git|gdb
 ```
+
+#### Hardening
+
+These variables can be used to lock down the desktop environment for single-application use cases or to restrict user capabilities.
+
+##### Meta Variables
+
+These variables act as presets, enabling multiple hardening options at once. Individual options can still be set to override the preset.
+
+| Variable | Description |
+| :----: | --- |
+| **`HARDEN_DESKTOP`** | Enables `DISABLE_OPEN_TOOLS`, `DISABLE_SUDO`, and `DISABLE_TERMINALS`. Also sets related Selkies UI settings (`SELKIES_FILE_TRANSFERS`, `SELKIES_COMMAND_ENABLED`, `SELKIES_UI_SIDEBAR_SHOW_FILES`, `SELKIES_UI_SIDEBAR_SHOW_APPS`) if they are not explicitly set by the user. |
+| **`HARDEN_OPENBOX`** | Enables `DISABLE_CLOSE_BUTTON`, `DISABLE_MOUSE_BUTTONS`, and `HARDEN_KEYBINDS`. It also flags `RESTART_APP` if not set by the user, ensuring the primary application is automatically restarted if closed. |
+
+##### Individual Hardening Variables
+
+| Variable | Description |
+| :--- | --- |
+| **`DISABLE_OPEN_TOOLS`** | If true, disables `xdg-open` and `exo-open` binaries by removing their execute permissions. |
+| **`DISABLE_SUDO`** | If true, disables the `sudo` command by removing its execute permissions and invalidating the passwordless sudo configuration. |
+| **`DISABLE_TERMINALS`** | If true, disables common terminal emulators by removing their execute permissions and hiding them from the Openbox right-click menu. |
+| **`DISABLE_CLOSE_BUTTON`** | If true, removes the close button from window title bars in the Openbox window manager. |
+| **`DISABLE_MOUSE_BUTTONS`** | If true, disables the right-click and middle-click context menus and actions within the Openbox window manager. |
+| **`HARDEN_KEYBINDS`** | If true, disables default Openbox keybinds that can bypass other hardening options (e.g., `Alt+F4` to close windows, `Alt+Escape` to show the root menu). |
+| **`RESTART_APP`** | If true, enables a watchdog service that automatically restarts the main application if it is closed. The user's autostart script is made read-only and root owned to prevent tampering. |
+
+#### Selkies application settings
+
+Using environment variables every facet of the application can be configured.
+
+##### Booleans and Locking
+Boolean settings accept `true` or `false`. You can also prevent the user from changing a boolean setting in the UI by appending `|locked`. The UI toggle for this setting will be hidden.
+
+*   **Example**: To force CPU encoding on and prevent the user from disabling it:
+    ```bash
+    -e SELKIES_USE_CPU="true|locked"
+    ```
+
+##### Enums and Lists
+These settings accept a comma-separated list of values. Their behavior depends on the number of items provided:
+
+*   **Multiple Values**: The first item in the list becomes the default selection, and all items in the list become the available options in the UI dropdown.
+*   **Single Value**: The provided value becomes the default, and the UI dropdown is hidden because the choice is locked.
+
+*   **Example**: Force the encoder to be `jpeg` with no other options available to the user:
+    ```bash
+    -e SELKIES_ENCODER="jpeg"
+    ```
+
+##### Ranges
+Range settings define a minimum and maximum for a value (e.g., framerate).
+
+*   **To set a range**: Use a hyphen-separated `min-max` format. The UI will show a slider.
+*   **To set a fixed value**: Provide a single number. This will lock the value and hide the UI slider.
+
+*   **Example**: Lock the framerate to exactly 60 FPS.
+    ```bash
+    -e SELKIES_FRAMERATE="60"
+    ```
+
+##### Manual Resolution Mode
+The server can be forced to use a single, fixed resolution for all connecting clients. This mode is automatically activated if `SELKIES_MANUAL_WIDTH`, `SELKIES_MANUAL_HEIGHT`, or `SELKIES_IS_MANUAL_RESOLUTION_MODE` is set.
+
+*   If `SELKIES_MANUAL_WIDTH` and/or `SELKIES_MANUAL_HEIGHT` are set, the resolution is locked to those values.
+*   If `SELKIES_IS_MANUAL_RESOLUTION_MODE` is set to `true` without specifying width or height, the resolution defaults to **1024x768**.
+*   When this mode is active, the client UI for changing resolution is disabled.
+
+| Environment Variable | Default Value | Description |
+| --- | --- | --- |
+| `SELKIES_UI_TITLE` | `'Selkies'` | Title in top left corner of sidebar. |
+| `SELKIES_UI_SHOW_LOGO` | `True` | Show the Selkies logo in the sidebar. |
+| `SELKIES_UI_SHOW_SIDEBAR` | `True` | Show the main sidebar UI. |
+| `SELKIES_UI_SHOW_CORE_BUTTONS` | `True` | Show the core components buttons display, audio, microphone, and gamepad. |
+| `SELKIES_UI_SIDEBAR_SHOW_VIDEO_SETTINGS` | `True` | Show the video settings section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_SCREEN_SETTINGS` | `True` | Show the screen settings section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_AUDIO_SETTINGS` | `True` | Show the audio settings section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_STATS` | `True` | Show the stats section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_CLIPBOARD` | `True` | Show the clipboard section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_FILES` | `True` | Show the file transfer section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_APPS` | `True` | Show the applications section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_SHARING` | `True` | Show the sharing section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_GAMEPADS` | `True` | Show the gamepads section in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_FULLSCREEN` | `True` | Show the fullscreen button in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_GAMING_MODE` | `True` | Show the gaming mode button in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_TRACKPAD` | `True` | Show the virtual trackpad button in the sidebar. |
+| `SELKIES_UI_SIDEBAR_SHOW_KEYBOARD_BUTTON` | `True` | Show the on-screen keyboard button in the display area. |
+| `SELKIES_UI_SIDEBAR_SHOW_SOFT_BUTTONS` | `True` | Show the soft buttons section in the sidebar. |
+| `SELKIES_AUDIO_ENABLED` | `True` | Enable server-to-client audio streaming. |
+| `SELKIES_MICROPHONE_ENABLED` | `True` | Enable client-to-server microphone forwarding. |
+| `SELKIES_GAMEPAD_ENABLED` | `True` | Enable gamepad support. |
+| `SELKIES_CLIPBOARD_ENABLED` | `True` | Enable clipboard synchronization. |
+| `SELKIES_COMMAND_ENABLED` | `True` | Enable parsing of command websocket messages. |
+| `SELKIES_FILE_TRANSFERS` | `'upload,download'` | Allowed file transfer directions (comma-separated: "upload,download"). Set to "" or "none" to disable. |
+| `SELKIES_ENCODER` | `'x264enc,x264enc-striped,jpeg'` | The default video encoders. |
+| `SELKIES_FRAMERATE` | `'8-120'` | Allowed framerate range or a fixed value. |
+| `SELKIES_H264_CRF` | `'5-50'` | Allowed H.264 CRF range or a fixed value. |
+| `SELKIES_JPEG_QUALITY` | `'1-100'` | Allowed JPEG quality range or a fixed value. |
+| `SELKIES_H264_FULLCOLOR` | `False` | Enable H.264 full color range for pixelflux encoders. |
+| `SELKIES_H264_STREAMING_MODE` | `False` | Enable H.264 streaming mode for pixelflux encoders. |
+| `SELKIES_USE_CPU` | `False` | Force CPU-based encoding for pixelflux. |
+| `SELKIES_USE_PAINT_OVER_QUALITY` | `True` | Enable high-quality paint-over for static scenes. |
+| `SELKIES_PAINT_OVER_JPEG_QUALITY` | `'1-100'` | Allowed JPEG paint-over quality range or a fixed value. |
+| `SELKIES_H264_PAINTOVER_CRF` | `'5-50'` | Allowed H.264 paint-over CRF range or a fixed value. |
+| `SELKIES_H264_PAINTOVER_BURST_FRAMES` | `'1-30'` | Allowed H.264 paint-over burst frames range or a fixed value. |
+| `SELKIES_SECOND_SCREEN` | `True` | Enable support for a second monitor/display. |
+| `SELKIES_AUDIO_BITRATE` | `'320000'` | The default audio bitrate. |
+| `SELKIES_IS_MANUAL_RESOLUTION_MODE` | `False` | Lock the resolution to the manual width/height values. |
+| `SELKIES_MANUAL_WIDTH` | `0` | Lock width to a fixed value. Setting this forces manual resolution mode. |
+| `SELKIES_MANUAL_HEIGHT` | `0` | Lock height to a fixed value. Setting this forces manual resolution mode. |
+| `SELKIES_SCALING_DPI` | `'96'` | The default DPI for UI scaling. |
+| `SELKIES_ENABLE_BINARY_CLIPBOARD` | `False` | Allow binary data on the clipboard. |
+| `SELKIES_USE_BROWSER_CURSORS` | `False` | Use browser CSS cursors instead of rendering to canvas. |
+| `SELKIES_USE_CSS_SCALING` | `False` | HiDPI when false, if true a lower resolution is sent from the client and the canvas is stretched. |
+| `SELKIES_PORT` (or `CUSTOM_WS_PORT`) | `8082` | Port for the data websocket server. |
+| `SELKIES_DRI_NODE` (or `DRI_NODE`) | `''` | Path to the DRI render node for VA-API. |
+| `SELKIES_AUDIO_DEVICE_NAME` | `'output.monitor'` | Audio device name for pcmflux capture. |
+| `SELKIES_WATERMARK_PATH` (or `WATERMARK_PNG`) | `''` | Absolute path to the watermark PNG file. |
+| `SELKIES_WATERMARK_LOCATION` (or `WATERMARK_LOCATION`) | `-1` | Watermark location enum (0-6). |
+| `SELKIES_DEBUG` | `False` | Enable debug logging. |
+| `SELKIES_ENABLE_SHARING` | `True` | Master toggle for all sharing features. |
+| `SELKIES_ENABLE_COLLAB` | `True` | Enable collaborative (read-write) sharing link. |
+| `SELKIES_ENABLE_SHARED` | `True` | Enable view-only sharing links. |
+| `SELKIES_ENABLE_PLAYER2` | `True` | Enable sharing link for gamepad player 2. |
+| `SELKIES_ENABLE_PLAYER3` | `True` | Enable sharing link for gamepad player 3. |
+| `SELKIES_ENABLE_PLAYER4` | `True` | Enable sharing link for gamepad player 4. |
 
 ## Usage
 
@@ -213,8 +361,6 @@ services:
   wps-office:
     image: lscr.io/linuxserver/wps-office:latest
     container_name: wps-office
-    security_opt:
-      - seccomp:unconfined #optional
     environment:
       - PUID=1000
       - PGID=1000
@@ -233,7 +379,6 @@ services:
 ```bash
 docker run -d \
   --name=wps-office \
-  --security-opt seccomp=unconfined `#optional` \
   -e PUID=1000 \
   -e PGID=1000 \
   -e TZ=Etc/UTC \
@@ -251,14 +396,13 @@ Containers are configured using parameters passed at runtime (such as those abov
 
 | Parameter | Function |
 | :----: | --- |
-| `-p 3000:3000` | WPS Office desktop gui. |
+| `-p 3000:3000` | WPS Office desktop gui, must be proxied. |
 | `-p 3001:3001` | WPS Office desktop gui HTTPS. |
 | `-e PUID=1000` | for UserID - see below for explanation |
 | `-e PGID=1000` | for GroupID - see below for explanation |
 | `-e TZ=Etc/UTC` | specify a timezone to use, see this [list](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List). |
 | `-v /config` | Users home directory in the container, stores program settings and documents |
 | `--shm-size=` | This is needed for electron applications to function properly. |
-| `--security-opt seccomp=unconfined` | For Docker Engine only, many modern gui apps need this to function on older hosts as syscalls are unknown to Docker. |
 
 ## Environment variables from files (Docker secrets)
 
@@ -422,6 +566,7 @@ Once registered you can define the dockerfile to use with `-f Dockerfile.aarch64
 
 ## Versions
 
+* **10.07.25:** - Rebase to Selkies HTTPS IS NOW REQUIRED, merge chinese and english image.
 * **10.02.24:** - Update Readme with new env vars and ingest proper PWA icon.
 * **06.01.24:** - Rebase to Debian Bookworm.
 * **17.01.24:** - Update Chromium wrapper.
