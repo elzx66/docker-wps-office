@@ -18,6 +18,8 @@ RUN \
   echo "**** install packages ****" && \
   pacman -Sy --noconfirm --needed \    
     git \
+    vim \
+    mousepad \
     qt6-base \
     tint2 \
     thunar && \

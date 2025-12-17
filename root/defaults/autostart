@@ -4,7 +4,5 @@ if [ ! -f $HOME/.config/tint2/tint2rc ]; then
     cp /defaults/tint2rc $HOME/.config/tint2/tint2rc
 fi
 
-
 # Start UI
 tint2 &
-/config/miniconda/env/py312/bin/python /pyscript/your_script.py &
