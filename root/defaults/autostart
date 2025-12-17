@@ -3,15 +3,8 @@ if [ ! -f $HOME/.config/tint2/tint2rc ]; then
     mkdir -p $HOME/.config/tint2
     cp /defaults/tint2rc $HOME/.config/tint2/tint2rc
 fi
-if [ ! -f $HOME/.config/Kingsoft/Office.conf ]; then
-mkdir -p $HOME/.config/Kingsoft
-echo "[kdcsdk]
-NotFirstOpen=true
-[6.0]
-common\\AcceptedEULA=true" > $HOME/.config/Kingsoft/Office.conf
-fi
 
 
 # Start UI
 tint2 &
-wps
+/config/miniconda/env/py312/bin/python /pyscript/your_script.py &
