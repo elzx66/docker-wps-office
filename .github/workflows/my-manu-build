@@ -3,7 +3,7 @@ name: Docker Image CI
 on:
   workflow_dispatch:
     branches:
-      - main
+      - tint2_thunar
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -27,5 +27,5 @@ jobs:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/wps-office-pycharm:1.0.0
-            ghcr.io/${{ github.repository_owner }}/wps-office-pycharm:latest
+            ghcr.io/${{ github.repository_owner }}/tint2_thunar:1.0.0
+            ghcr.io/${{ github.repository_owner }}/tint2_thunar:latest
