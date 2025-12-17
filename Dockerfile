@@ -10,44 +10,22 @@ LABEL build_version="Linuxserver.io version:- ${VERSION} Build-date:- ${BUILD_DA
 LABEL maintainer="thelamer"
 
 # title
-ENV TITLE=WPS-Office \
+ENV TITLE=Selkies \
     NO_FULL=true \
     NO_GAMEPAD=true
 
-RUN \
-  echo "**** add icon ****" && \
-  curl -o \
-    /usr/share/selkies/www/icon.png \
-    https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/wps-office-icon.png && \
+RUN \  
   echo "**** install packages ****" && \
-  pacman -Sy --noconfirm --needed \
-    chromium \
+  pacman -Sy --noconfirm --needed \    
     git \
     qt6-base \
     tint2 \
     thunar && \
-  echo "**** install wps-office ****" && \
-  cd /tmp && \
-  git clone https://aur.archlinux.org/wps-office-cn.git && \
-  chown -R abc:abc wps-office-cn && \
-  cd wps-office-cn && \
-  sudo -u abc makepkg -sAci --skipinteg --noconfirm --needed && \
-  mkdir /tmp/fonts && \
-  curl -o \
-    /tmp/fonts.tar.gz -L \
-    "https://github.com/BannedPatriot/ttf-wps-fonts/archive/refs/heads/master.tar.gz" && \
-  tar xf \
-    /tmp/fonts.tar.gz -C \
-    /tmp/fonts/ --strip-components=1 && \
-  cd /tmp/fonts && \
-  bash install.sh && cd / && \
+  cd / && \
   ln -s \
     /usr/lib/libtiff.so.6 \
     /usr/lib/libtiff.so.5 && \
   echo "**** application tweaks ****" && \
-  mv \
-    /usr/bin/chromium \
-    /usr/bin/chromium-real && \
   mv \
     /usr/bin/thunar \
     /usr/bin/thunar-real && \
